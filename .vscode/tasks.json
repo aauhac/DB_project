@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Flet App",
+      "type": "shell",
+      "command": "& \"$workspaceFolder\\.venv\\Scripts\\python.exe\" -m uv run flet run",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
