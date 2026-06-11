@@ -3,13 +3,13 @@ from __future__ import annotations
 import flet as ft
 
 from services.ammo_service import AmmoService
-from services.armor_service import ArmorService
+from services.defense_gear_service import DefenseGearService
 from services.loadout_service import LoadoutService
 from services.support_item_service import SupportItemService
 from services.weapon_part_service import WeaponPartService
 from services.weapon_service import WeaponService
 from ui.ammo_page import AmmoPage
-from ui.armor_page import ArmorPage
+from ui.defense_gear_page import DefenseGearPage
 from ui.loadout_create_page import LoadoutCreatePage
 from ui.loadout_list_page import LoadoutListPage
 from ui.part_page import PartPage
@@ -26,7 +26,7 @@ class MainLayout:
         self.weapon_service = WeaponService()
         self.part_service = WeaponPartService()
         self.ammo_service = AmmoService()
-        self.armor_service = ArmorService()
+        self.defense_gear_service = DefenseGearService()
         self.support_service = SupportItemService()
         self.loadout_service = LoadoutService()
 
@@ -36,14 +36,14 @@ class MainLayout:
             "총기 조회": WeaponPage(page, self.weapon_service),
             "총기 부품 조회": PartPage(page, self.part_service),
             "탄약 조회": AmmoPage(page, self.ammo_service),
-            "방어 장비 조회": ArmorPage(page, self.armor_service),
+            "방어 장비 조회": DefenseGearPage(page, self.defense_gear_service),
             "보조 장비 조회": SupportItemPage(page, self.support_service),
             "세팅 생성": LoadoutCreatePage(
                 page,
                 self.weapon_service,
                 self.part_service,
                 self.ammo_service,
-                self.armor_service,
+                self.defense_gear_service,
                 self.support_service,
                 self.loadout_service,
                 on_saved=self.loadout_list_page.refresh,

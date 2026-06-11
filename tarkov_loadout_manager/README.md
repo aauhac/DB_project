@@ -25,19 +25,13 @@ tarkov_loadout_manager/
     weapon_repository.py
     weapon_part_repository.py
     ammo_repository.py
-    armor_repository.py
-    helmet_repository.py
-    rig_repository.py
-    backpack_repository.py
-    medical_repository.py
     loadout_repository.py
     loadout_join_repository.py
   services/
     weapon_service.py
     weapon_part_service.py
     ammo_service.py
-    armor_service.py
-    helmet_service.py
+    defense_gear_service.py
     support_item_service.py
     loadout_service.py
   ui/
@@ -48,10 +42,8 @@ tarkov_loadout_manager/
     part_detail_dialog.py
     ammo_page.py
     ammo_detail_dialog.py
-    armor_page.py
-    armor_detail_dialog.py
-    helmet_page.py
-    helmet_detail_dialog.py
+    defense_gear_page.py
+    defense_gear_detail_dialog.py
     support_item_page.py
     support_item_detail_dialog.py
     loadout_create_page.py
@@ -72,6 +64,11 @@ tarkov_loadout_manager/
 pip install -r requirements.txt
 ```
 3. 앱 실행
+```powershell
+cd tarkov_loadout_manager
+python app.py
+```
+또는
 ```powershell
 uv run flet run app.py
 ```

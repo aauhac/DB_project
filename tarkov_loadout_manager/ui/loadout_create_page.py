@@ -5,7 +5,7 @@ from typing import Callable
 import flet as ft
 
 from services.ammo_service import AmmoService
-from services.armor_service import ArmorService
+from services.defense_gear_service import DefenseGearService
 from services.loadout_service import LoadoutService
 from services.support_item_service import SupportItemService
 from services.weapon_part_service import WeaponPartService
@@ -22,7 +22,7 @@ class LoadoutCreatePage:
         weapon_service: WeaponService,
         part_service: WeaponPartService,
         ammo_service: AmmoService,
-        armor_service: ArmorService,
+        defense_gear_service: DefenseGearService,
         support_service: SupportItemService,
         loadout_service: LoadoutService,
         on_saved: Callable[[], None] | None = None,
@@ -31,7 +31,7 @@ class LoadoutCreatePage:
         self.weapon_service = weapon_service
         self.part_service = part_service
         self.ammo_service = ammo_service
-        self.armor_service = armor_service
+        self.defense_gear_service = defense_gear_service
         self.support_service = support_service
         self.loadout_service = loadout_service
         self.on_saved = on_saved
@@ -63,12 +63,12 @@ class LoadoutCreatePage:
             ft.dropdown.Option(str(item["id"]), item["name"]) for item in weapons
         ]
 
-        armors = self.armor_service.get_armors(gear_type="armor")
+        armors = self.defense_gear_service.get_armors(gear_type="armor")
         self.armor_dropdown.options = [ft.dropdown.Option("", "선택 안 함")] + [
             ft.dropdown.Option(str(item["id"]), item["name"]) for item in armors
         ]
 
-        helmets = self.armor_service.get_armors(gear_type="helmet")
+        helmets = self.defense_gear_service.get_armors(gear_type="helmet")
         self.helmet_dropdown.options = [ft.dropdown.Option("", "선택 안 함")] + [
             ft.dropdown.Option(str(item["id"]), item["name"]) for item in helmets
         ]
