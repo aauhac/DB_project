@@ -22,6 +22,8 @@ def build_loadout_detail(
 
     parts = detail.get("weapon_parts", [])
     ammo_items = detail.get("ammo_items", [])
+    defense_gears = detail.get("defense_gears", [])
+    support_items = detail.get("support_items", [])
     medical_items = detail.get("medical_items", [])
 
     return ft.Column(
@@ -30,22 +32,30 @@ def build_loadout_detail(
         controls=[
             ft.Text("세팅 상세", size=22, weight=ft.FontWeight.BOLD),
             _named_item("세팅명", str(header.get("name", "-"))),
+            _named_item("레이드 목적", str(header.get("raid_purpose", "-"))),
             _named_item("작성자", str(header.get("nickname", "-"))),
             _named_item("생성일", str(header.get("created_at", "-"))),
             _named_item("메모", str(header.get("memo", ""))),
             ft.Divider(),
             _named_item("총기", weapon_name),
-            _named_item("총기 유형", weapon_type),
+            _named_item("총기 분류", weapon_type),
             ft.Text("총기 부품", weight=ft.FontWeight.BOLD),
             ft.Column([ft.Text(f"- {item['name']} ({item.get('part_type_name', '-')})") for item in parts], spacing=4),
             ft.Divider(),
             ft.Text("탄약", weight=ft.FontWeight.BOLD),
             ft.Column([ft.Text(f"- {item['name']} x {item.get('quantity', 1)}") for item in ammo_items], spacing=4),
             ft.Divider(),
-            _named_item("방어구", str((detail.get("armor") or {}).get("name", "-"))),
-            _named_item("헬멧", str((detail.get("helmet") or {}).get("name", "-"))),
-            _named_item("리그", str((detail.get("rig") or {}).get("name", "-"))),
-            _named_item("백팩", str((detail.get("backpack") or {}).get("name", "-"))),
+            ft.Text("방어 장비", weight=ft.FontWeight.BOLD),
+            ft.Column(
+                [ft.Text(f"- {item['name']} ({item.get('gear_type', '-')})") for item in defense_gears],
+                spacing=4,
+            ),
+            ft.Divider(),
+            ft.Text("보조 장비", weight=ft.FontWeight.BOLD),
+            ft.Column(
+                [ft.Text(f"- {item['name']} ({item.get('item_type', '-')}) x {item.get('quantity', 1)}") for item in support_items],
+                spacing=4,
+            ),
             ft.Divider(),
             ft.Text("의료품", weight=ft.FontWeight.BOLD),
             ft.Column([ft.Text(f"- {item['name']} x {item.get('quantity', 1)}") for item in medical_items], spacing=4),

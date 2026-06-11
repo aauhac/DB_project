@@ -6,7 +6,6 @@ import flet as ft
 
 from services.ammo_service import AmmoService
 from services.armor_service import ArmorService
-from services.helmet_service import HelmetService
 from services.loadout_service import LoadoutService
 from services.support_item_service import SupportItemService
 from services.weapon_part_service import WeaponPartService
@@ -24,7 +23,6 @@ class LoadoutCreatePage:
         part_service: WeaponPartService,
         ammo_service: AmmoService,
         armor_service: ArmorService,
-        helmet_service: HelmetService,
         support_service: SupportItemService,
         loadout_service: LoadoutService,
         on_saved: Callable[[], None] | None = None,
@@ -34,17 +32,17 @@ class LoadoutCreatePage:
         self.part_service = part_service
         self.ammo_service = ammo_service
         self.armor_service = armor_service
-        self.helmet_service = helmet_service
         self.support_service = support_service
         self.loadout_service = loadout_service
         self.on_saved = on_saved
 
         self.name_field = ft.TextField(label="세팅 이름", width=300)
+        self.raid_purpose_field = ft.TextField(label="레이드 목적", width=300)
         self.memo_field = ft.TextField(label="메모", multiline=True, min_lines=2, max_lines=4, expand=True)
         self.weapon_dropdown = ft.Dropdown(label="총기", width=260)
         self.weapon_dropdown.on_change = self._on_weapon_change
-        self.armor_dropdown = ft.Dropdown(label="방어구", width=240)
-        self.helmet_dropdown = ft.Dropdown(label="헬멧", width=240)
+        self.armor_dropdown = ft.Dropdown(label="방어구(armor)", width=240)
+        self.helmet_dropdown = ft.Dropdown(label="헬멧(helmet)", width=240)
         self.rig_dropdown = ft.Dropdown(label="리그", width=240)
         self.backpack_dropdown = ft.Dropdown(label="백팩", width=240)
 
@@ -65,12 +63,12 @@ class LoadoutCreatePage:
             ft.dropdown.Option(str(item["id"]), item["name"]) for item in weapons
         ]
 
-        armors = self.armor_service.get_armors()
+        armors = self.armor_service.get_armors(gear_type="armor")
         self.armor_dropdown.options = [ft.dropdown.Option("", "선택 안 함")] + [
             ft.dropdown.Option(str(item["id"]), item["name"]) for item in armors
         ]
 
-        helmets = self.helmet_service.get_helmets()
+        helmets = self.armor_service.get_armors(gear_type="helmet")
         self.helmet_dropdown.options = [ft.dropdown.Option("", "선택 안 함")] + [
             ft.dropdown.Option(str(item["id"]), item["name"]) for item in helmets
         ]
@@ -141,6 +139,7 @@ class LoadoutCreatePage:
         return {
             "user_id": 1,
             "name": safe_str(self.name_field.value),
+            "raid_purpose": safe_str(self.raid_purpose_field.value),
             "memo": safe_str(self.memo_field.value),
             "weapon_id": to_int_or_none(self.weapon_dropdown.value),
             "weapon_part_ids": weapon_part_ids,
@@ -164,6 +163,7 @@ class LoadoutCreatePage:
 
     def _reset(self, _: ft.ControlEvent | None) -> None:
         self.name_field.value = ""
+        self.raid_purpose_field.value = ""
         self.memo_field.value = ""
         self.weapon_dropdown.value = None
         self.armor_dropdown.value = ""
@@ -187,6 +187,7 @@ class LoadoutCreatePage:
             controls=[
                 ft.Text("세팅 생성", size=24, weight=ft.FontWeight.BOLD),
                 self.name_field,
+                self.raid_purpose_field,
                 self.memo_field,
                 self.weapon_dropdown,
                 ft.Text("총기 부품(다중 선택)"),

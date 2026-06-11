@@ -13,9 +13,9 @@ class WeaponService:
         self.weapon_repo = WeaponRepository()
         self.join_repo = LoadoutJoinRepository()
 
-    def get_weapons(self, name_keyword: str = "", weapon_type_id: int | None = None) -> list[dict[str, Any]]:
-        if weapon_type_id is not None:
-            items = self.weapon_repo.find_by_type(weapon_type_id)
+    def get_weapons(self, name_keyword: str = "", weapon_type: str | None = None) -> list[dict[str, Any]]:
+        if weapon_type is not None:
+            items = self.weapon_repo.find_by_type(weapon_type)
         else:
             items = self.weapon_repo.find_all()
 

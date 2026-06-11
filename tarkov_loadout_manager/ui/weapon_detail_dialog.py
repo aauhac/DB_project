@@ -39,7 +39,7 @@ def open_weapon_detail_dialog(
             content=ft.Column(
                 controls=[
                     image_control,
-                    ft.Text(f"유형: {weapon_detail.get('weapon_type_name', '-')}") ,
+                    ft.Text(f"분류: {weapon_detail.get('weapon_category', '-')}") ,
                     ft.Text(f"구경: {weapon_detail.get('caliber', '-')}") ,
                     ft.Text(f"제조사: {weapon_detail.get('manufacturer', '-')}") ,
                     ft.Text(f"반동: {weapon_detail.get('recoil', '-')}, 에르고: {weapon_detail.get('ergonomics', '-')}") ,

@@ -1,0 +1,107 @@
+```mermaid
+erDiagram
+    APP_USER ||--o{ LOADOUT : creates
+    LOADOUT ||--o{ LOADOUT_ITEM : contains
+    WEAPON ||--o{ WEAPON_PART : has
+
+    WEAPON ||--o{ LOADOUT_ITEM : weapon
+    WEAPON_PART ||--o{ LOADOUT_ITEM : part
+    AMMO ||--o{ LOADOUT_ITEM : ammo
+    DEFENSE_GEAR ||--o{ LOADOUT_ITEM : defense
+    SUPPORT_ITEM ||--o{ LOADOUT_ITEM : support
+
+    WEAPON }o--o{ AMMO : uses
+
+    APP_USER {
+        int id PK
+        string email
+        string nickname
+        datetime created_at
+    }
+
+    LOADOUT {
+        int id PK
+        int user_id FK
+        string name
+        string raid_purpose
+        string memo
+        datetime created_at
+    }
+
+    LOADOUT_ITEM {
+        int id PK
+        int loadout_id FK
+        string item_category
+        int item_id
+        int quantity
+        string slot_label
+    }
+
+    WEAPON {
+        int id PK
+        string name
+        string weapon_category
+        string caliber
+        string manufacturer
+        int recoil
+        int ergonomics
+        string fire_mode
+        float weight
+        int market_price
+        string image_path
+        string description
+    }
+
+    WEAPON_PART {
+        int id PK
+        int weapon_id FK
+        string name
+        string part_type
+        string slot_name
+        int recoil_delta
+        int ergonomics_delta
+        int accuracy_delta
+        float weight
+        string description
+    }
+
+    AMMO {
+        int id PK
+        string name
+        string caliber
+        int damage
+        int penetration
+        float armor_damage_pct
+        int recoil_modifier
+        int velocity
+        int market_price
+        string description
+    }
+
+    DEFENSE_GEAR {
+        int id PK
+        string name
+        string gear_type
+        int armor_class
+        int durability
+        string protected_area
+        string material
+        float move_speed_penalty
+        float turn_speed_penalty
+        float ergonomics_penalty
+        float sound_penalty
+        string ricochet_chance
+        string description
+    }
+
+    SUPPORT_ITEM {
+        int id PK
+        string name
+        string item_type
+        int capacity_or_heal
+        int uses_count
+        float weight
+        string effect_text
+        string description
+    }
+```

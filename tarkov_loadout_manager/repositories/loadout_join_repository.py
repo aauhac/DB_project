@@ -11,10 +11,9 @@ class LoadoutJoinRepository(BaseRepository):
     def find_weapon_detail_with_parts(self, weapon_id: int) -> dict[str, Any] | None:
         weapon = self.fetch_one(
             """
-            SELECT w.*, wt.name AS weapon_type_name
-            FROM weapon w
-            JOIN weapon_type wt ON w.weapon_type_id = wt.id
-            WHERE w.id = ?
+            SELECT *
+            FROM weapon
+            WHERE id = ?
             """,
             (weapon_id,),
         )
@@ -23,11 +22,9 @@ class LoadoutJoinRepository(BaseRepository):
 
         parts = self.fetch_all(
             """
-            SELECT wp.*, pt.name AS part_type_name
-            FROM weapon_part_compatibility wpc
-            JOIN weapon_part wp ON wpc.weapon_part_id = wp.id
-            JOIN part_type pt ON wp.part_type_id = pt.id
-            WHERE wpc.weapon_id = ?
+            SELECT wp.*, wp.part_type AS part_type_name
+            FROM weapon_part wp
+            WHERE wp.weapon_id = ?
             ORDER BY wp.id
             """,
             (weapon_id,),
@@ -42,9 +39,9 @@ class LoadoutJoinRepository(BaseRepository):
             SELECT l.id, l.name, l.memo, l.created_at, u.nickname,
                    w.name AS weapon_name
             FROM loadout l
-            JOIN user_account u ON l.user_id = u.id
-            LEFT JOIN loadout_weapon lw ON lw.loadout_id = l.id
-            LEFT JOIN weapon w ON lw.weapon_id = w.id
+            JOIN app_user u ON l.user_id = u.id
+            LEFT JOIN loadout_item li ON li.loadout_id = l.id AND li.item_category = 'weapon'
+            LEFT JOIN weapon w ON li.item_id = w.id
             WHERE l.user_id = ?
             ORDER BY l.created_at DESC
             """,
@@ -54,9 +51,9 @@ class LoadoutJoinRepository(BaseRepository):
     def find_loadout_detail(self, loadout_id: int) -> dict[str, Any] | None:
         header = self.fetch_one(
             """
-            SELECT l.id, l.name, l.memo, l.created_at, u.id AS user_id, u.nickname, u.email
+            SELECT l.id, l.name, l.raid_purpose, l.memo, l.created_at, u.id AS user_id, u.nickname, u.email
             FROM loadout l
-            JOIN user_account u ON l.user_id = u.id
+            JOIN app_user u ON l.user_id = u.id
             WHERE l.id = ?
             """,
             (loadout_id,),
@@ -64,89 +61,75 @@ class LoadoutJoinRepository(BaseRepository):
         if header is None:
             return None
 
-        weapon = self.fetch_one(
+        weapon_items = self.fetch_all(
             """
-            SELECT lw.id AS loadout_weapon_id, w.*, wt.name AS weapon_type_name
-            FROM loadout_weapon lw
-            JOIN weapon w ON lw.weapon_id = w.id
-            JOIN weapon_type wt ON w.weapon_type_id = wt.id
-            WHERE lw.loadout_id = ?
+            SELECT li.id AS loadout_item_id, li.quantity, li.slot_label, w.*,
+                   w.weapon_category AS weapon_type_name
+            FROM loadout_item li
+            JOIN weapon w ON li.item_id = w.id
+            WHERE li.loadout_id = ? AND li.item_category = 'weapon'
+            """,
+            (loadout_id,),
+        )
+        weapon = weapon_items[0] if weapon_items else None
+
+        parts = self.fetch_all(
+            """
+            SELECT li.id AS loadout_item_id, li.quantity, li.slot_label, wp.*,
+                   wp.part_type AS part_type_name
+            FROM loadout_item li
+            JOIN weapon_part wp ON li.item_id = wp.id
+            WHERE li.loadout_id = ? AND li.item_category = 'weapon_part'
+            ORDER BY wp.id
             """,
             (loadout_id,),
         )
 
-        parts: list[dict[str, Any]] = []
-        if weapon is not None:
-            parts = self.fetch_all(
-                """
-                SELECT wp.*, pt.name AS part_type_name
-                FROM loadout_weapon_part lwp
-                JOIN weapon_part wp ON lwp.weapon_part_id = wp.id
-                JOIN part_type pt ON wp.part_type_id = pt.id
-                WHERE lwp.loadout_weapon_id = ?
-                ORDER BY wp.id
-                """,
-                (weapon["loadout_weapon_id"],),
-            )
-
         ammo_items = self.fetch_all(
             """
-            SELECT la.quantity, a.*
-            FROM loadout_ammo la
-            JOIN ammo a ON la.ammo_id = a.id
-            WHERE la.loadout_id = ?
+            SELECT li.id AS loadout_item_id, li.quantity, li.slot_label, a.*
+            FROM loadout_item li
+            JOIN ammo a ON li.item_id = a.id
+            WHERE li.loadout_id = ? AND li.item_category = 'ammo'
             ORDER BY a.id
             """,
             (loadout_id,),
         )
 
-        armor = self.fetch_one(
+        defense_gears = self.fetch_all(
             """
-            SELECT a.*
-            FROM loadout_armor la
-            JOIN armor a ON la.armor_id = a.id
-            WHERE la.loadout_id = ?
+            SELECT li.id AS loadout_item_id, li.quantity, li.slot_label, dg.*
+            FROM loadout_item li
+            JOIN defense_gear dg ON li.item_id = dg.id
+            WHERE li.loadout_id = ? AND li.item_category = 'defense_gear'
+            ORDER BY dg.id
             """,
             (loadout_id,),
         )
 
-        helmet = self.fetch_one(
+        support_items = self.fetch_all(
             """
-            SELECT h.*
-            FROM loadout_helmet lh
-            JOIN helmet h ON lh.helmet_id = h.id
-            WHERE lh.loadout_id = ?
+            SELECT li.id AS loadout_item_id, li.quantity, li.slot_label, si.*
+            FROM loadout_item li
+            JOIN support_item si ON li.item_id = si.id
+            WHERE li.loadout_id = ? AND li.item_category = 'support_item'
+            ORDER BY si.id
             """,
             (loadout_id,),
         )
 
-        rig = self.fetch_one(
-            """
-            SELECT r.*
-            FROM loadout_rig lr
-            JOIN rig r ON lr.rig_id = r.id
-            WHERE lr.loadout_id = ?
-            """,
-            (loadout_id,),
-        )
+        armor = next((item for item in defense_gears if item.get("gear_type") == "armor"), None)
+        helmet = next((item for item in defense_gears if item.get("gear_type") == "helmet"), None)
+        rig = next((item for item in support_items if item.get("item_type") == "rig"), None)
+        backpack = next((item for item in support_items if item.get("item_type") == "backpack"), None)
+        medical_items = [item for item in support_items if item.get("item_type") == "medical"]
 
-        backpack = self.fetch_one(
+        loadout_items = self.fetch_all(
             """
-            SELECT b.*
-            FROM loadout_backpack lb
-            JOIN backpack b ON lb.backpack_id = b.id
-            WHERE lb.loadout_id = ?
-            """,
-            (loadout_id,),
-        )
-
-        medical_items = self.fetch_all(
-            """
-            SELECT lm.quantity, mi.*
-            FROM loadout_medical lm
-            JOIN medical_item mi ON lm.medical_item_id = mi.id
-            WHERE lm.loadout_id = ?
-            ORDER BY mi.id
+            SELECT id, item_category, item_id, quantity, slot_label
+            FROM loadout_item
+            WHERE loadout_id = ?
+            ORDER BY id
             """,
             (loadout_id,),
         )
@@ -156,6 +139,9 @@ class LoadoutJoinRepository(BaseRepository):
             "weapon": weapon,
             "weapon_parts": parts,
             "ammo_items": ammo_items,
+            "defense_gears": defense_gears,
+            "support_items": support_items,
+            "loadout_items": loadout_items,
             "armor": armor,
             "helmet": helmet,
             "rig": rig,

@@ -2,33 +2,33 @@ from __future__ import annotations
 
 from typing import Any
 
-from repositories.backpack_repository import BackpackRepository
-from repositories.medical_repository import MedicalRepository
-from repositories.rig_repository import RigRepository
+from repositories.base_repository import BaseRepository
 
 
 class SupportItemService:
-    """리그/백팩/의료품 조회 서비스."""
+    """support_item 통합 조회 서비스."""
 
     def __init__(self) -> None:
-        self.rig_repo = RigRepository()
-        self.backpack_repo = BackpackRepository()
-        self.medical_repo = MedicalRepository()
+        self.repo = BaseRepository()
 
     def get_rigs(self) -> list[dict[str, Any]]:
-        return self.rig_repo.find_all()
+        return self.repo.fetch_all(
+            "SELECT * FROM support_item WHERE item_type = 'rig' ORDER BY id"
+        )
 
     def get_backpacks(self) -> list[dict[str, Any]]:
-        return self.backpack_repo.find_all()
+        return self.repo.fetch_all(
+            "SELECT * FROM support_item WHERE item_type = 'backpack' ORDER BY id"
+        )
 
     def get_medicals(self) -> list[dict[str, Any]]:
-        return self.medical_repo.find_all()
+        return self.repo.fetch_all(
+            "SELECT * FROM support_item WHERE item_type = 'medical' ORDER BY id"
+        )
 
     def get_support_item_detail(self, category: str, item_id: int) -> dict[str, Any] | None:
-        if category == "rig":
-            return self.rig_repo.find_by_id(item_id)
-        if category == "backpack":
-            return self.backpack_repo.find_by_id(item_id)
-        if category == "medical_item":
-            return self.medical_repo.find_by_id(item_id)
-        return None
+        item_type = "medical" if category == "medical_item" else category
+        return self.repo.fetch_one(
+            "SELECT * FROM support_item WHERE id = ? AND item_type = ?",
+            (item_id, item_type),
+        )

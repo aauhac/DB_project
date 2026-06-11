@@ -24,6 +24,7 @@ class LoadoutService:
             loadout_id = self.repo.save_loadout_base(
                 user_id=int(payload["user_id"]),
                 name=str(payload["name"]).strip(),
+                raid_purpose=payload.get("raid_purpose"),
                 memo=payload.get("memo"),
             )
             self.repo.save_loadout_components(loadout_id, payload)
@@ -44,7 +45,12 @@ class LoadoutService:
             if not is_valid:
                 return False, message
 
-            self.repo.update_loadout_base(loadout_id, str(payload["name"]).strip(), payload.get("memo"))
+            self.repo.update_loadout_base(
+                loadout_id,
+                str(payload["name"]).strip(),
+                payload.get("raid_purpose"),
+                payload.get("memo"),
+            )
             self.repo.clear_loadout_children(loadout_id)
             self.repo.save_loadout_components(loadout_id, payload)
             return True, "세팅이 수정되었습니다."

@@ -81,7 +81,7 @@ uv run flet run app.py
 - DB 파일명: `tarkov_loadout.duckdb`
 
 ## 주요 기능
-- 총기/부품/탄약/방어구/헬멧/보조 장비 목록 및 상세 조회
+- 총기/부품/탄약/방어 장비/보조 장비 목록 및 상세 조회
 - 세팅 생성 및 저장
 - 저장 세팅 목록 조회
 - 저장 세팅 상세 조회 (Join 결과 통합)
@@ -89,28 +89,25 @@ uv run flet run app.py
 - 저장 세팅 삭제
 
 ## 주요 테이블 설명
-- `weapon`, `weapon_part`, `ammo`, `armor`, `helmet`, `rig`, `backpack`, `medical_item`: 장비 마스터
+- `app_user`: 사용자 정보
+- `weapon`: 총기 마스터 (weapon_category 기반)
+- `weapon_part`: 총기 부품 마스터 (weapon_id FK)
+- `ammo`: 탄약 마스터
+- `defense_gear`: 방어 장비 통합 마스터 (gear_type = armor/helmet)
+- `support_item`: 보조 장비 통합 마스터 (item_type = rig/backpack/medical)
 - `loadout`: 세팅 헤더
-- `loadout_weapon`, `loadout_weapon_part`, `loadout_ammo`, `loadout_armor`, `loadout_helmet`, `loadout_rig`, `loadout_backpack`, `loadout_medical`: 세팅 상세
-- `weapon_part_compatibility`: 총기-부품 호환 관계
+- `loadout_item`: 세팅 상세 (item_category = weapon/weapon_part/ammo/defense_gear/support_item)
 
 ## JOIN 기능 설명
 1. 총기 상세 조회
-- `weapon` + `weapon_type`
+- `weapon` + `weapon_part`
 
-2. 총기 호환 부품 조회
-- `weapon_part_compatibility` + `weapon_part` + `part_type`
+2. 총기 부품 조회
+- `weapon_part` (weapon_id 기준)
 
 3. 세팅 상세 조회
-- `loadout` + `user_account`
-- `loadout_weapon` + `weapon` + `weapon_type`
-- `loadout_weapon_part` + `weapon_part` + `part_type`
-- `loadout_ammo` + `ammo`
-- `loadout_armor` + `armor`
-- `loadout_helmet` + `helmet`
-- `loadout_rig` + `rig`
-- `loadout_backpack` + `backpack`
-- `loadout_medical` + `medical_item`
+- `loadout` + `app_user` + `loadout_item`
+- `loadout_item.item_category`에 따라 `weapon`, `weapon_part`, `ammo`, `defense_gear`, `support_item` 조회
 
 ## 향후 개선점
 - 세팅 수정 화면에서 모든 장비를 재선택할 수 있도록 폼 확장

@@ -19,20 +19,21 @@ class WeaponRepository(BaseRepository):
         self.execute(
             """
             INSERT INTO weapon (
-                id, weapon_type_id, name, caliber, manufacturer, recoil, ergonomics,
-                fire_mode, weight, image_path, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                id, name, weapon_category, caliber, manufacturer, recoil, ergonomics,
+                fire_mode, weight, market_price, image_path, description
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 new_id,
-                data["weapon_type_id"],
                 data["name"],
+                data["weapon_category"],
                 data["caliber"],
                 data.get("manufacturer"),
                 data.get("recoil"),
                 data.get("ergonomics"),
                 data.get("fire_mode"),
                 data.get("weight"),
+                data.get("market_price"),
                 data.get("image_path"),
                 data.get("description"),
             ),
@@ -43,19 +44,20 @@ class WeaponRepository(BaseRepository):
         self.execute(
             """
             UPDATE weapon
-            SET weapon_type_id = ?, name = ?, caliber = ?, manufacturer = ?, recoil = ?,
-                ergonomics = ?, fire_mode = ?, weight = ?, image_path = ?, description = ?
+            SET name = ?, weapon_category = ?, caliber = ?, manufacturer = ?, recoil = ?,
+                ergonomics = ?, fire_mode = ?, weight = ?, market_price = ?, image_path = ?, description = ?
             WHERE id = ?
             """,
             (
-                data["weapon_type_id"],
                 data["name"],
+                data["weapon_category"],
                 data["caliber"],
                 data.get("manufacturer"),
                 data.get("recoil"),
                 data.get("ergonomics"),
                 data.get("fire_mode"),
                 data.get("weight"),
+                data.get("market_price"),
                 data.get("image_path"),
                 data.get("description"),
                 item_id,
@@ -71,11 +73,17 @@ class WeaponRepository(BaseRepository):
             (f"%{keyword}%",),
         )
 
-    def find_by_type(self, weapon_type_id: int) -> list[dict[str, Any]]:
+    def find_by_type(self, weapon_category: str) -> list[dict[str, Any]]:
         return self.fetch_all(
-            "SELECT * FROM weapon WHERE weapon_type_id = ? ORDER BY id",
-            (weapon_type_id,),
+            "SELECT * FROM weapon WHERE weapon_category = ? ORDER BY id",
+            (weapon_category,),
         )
 
     def find_weapon_types(self) -> list[dict[str, Any]]:
-        return self.fetch_all("SELECT * FROM weapon_type ORDER BY id")
+        return self.fetch_all(
+            """
+            SELECT ROW_NUMBER() OVER (ORDER BY weapon_category) AS id, weapon_category AS name
+            FROM (SELECT DISTINCT weapon_category FROM weapon)
+            ORDER BY weapon_category
+            """
+        )

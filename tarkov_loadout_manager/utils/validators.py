@@ -42,4 +42,8 @@ def validate_loadout_payload(payload: dict[str, Any]) -> tuple[bool, str]:
         if not validate_positive_int(medical.get("quantity")):
             return False, "의료품 수량은 1 이상의 정수여야 합니다."
 
+    for support in payload.get("support_items", []):
+        if not validate_positive_int(support.get("quantity", 1)):
+            return False, "보조 장비 수량은 1 이상의 정수여야 합니다."
+
     return True, "검증 성공"

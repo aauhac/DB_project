@@ -11,10 +11,10 @@ class WeaponPartService:
     def __init__(self) -> None:
         self.repo = WeaponPartRepository()
 
-    def get_parts(self, part_type_id: int | None = None) -> list[dict[str, Any]]:
-        if part_type_id is None:
+    def get_parts(self, part_type: str | None = None) -> list[dict[str, Any]]:
+        if part_type is None:
             return self.repo.find_all()
-        return self.repo.find_by_type(part_type_id)
+        return self.repo.find_by_type(part_type)
 
     def get_part_types(self) -> list[dict[str, Any]]:
         return self.repo.find_part_types()

@@ -6,22 +6,25 @@ from repositories.base_repository import BaseRepository
 
 
 class HelmetRepository(BaseRepository):
-    """helmet 테이블 CRUD 및 조건 조회."""
+    """defense_gear(helmet) 조회용 리포지토리."""
 
     def find_all(self) -> list[dict[str, Any]]:
-        return self.fetch_all("SELECT * FROM helmet ORDER BY id")
+        return self.fetch_all("SELECT * FROM defense_gear WHERE gear_type = 'helmet' ORDER BY id")
 
     def find_by_id(self, item_id: int) -> dict[str, Any] | None:
-        return self.fetch_one("SELECT * FROM helmet WHERE id = ?", (item_id,))
+        return self.fetch_one(
+            "SELECT * FROM defense_gear WHERE id = ? AND gear_type = 'helmet'",
+            (item_id,),
+        )
 
     def insert(self, data: dict[str, Any]) -> int:
-        new_id = self.get_next_id("helmet")
+        new_id = self.get_next_id("defense_gear")
         self.execute(
             """
-            INSERT INTO helmet (
+            INSERT INTO defense_gear (
                 id, name, armor_class, durability, protected_area, material,
-                sound_penalty, ricochet_chance, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                sound_penalty, ricochet_chance, gear_type, description
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 new_id,
@@ -32,6 +35,7 @@ class HelmetRepository(BaseRepository):
                 data.get("material"),
                 data.get("sound_penalty"),
                 data.get("ricochet_chance"),
+                "helmet",
                 data.get("description"),
             ),
         )
@@ -40,10 +44,10 @@ class HelmetRepository(BaseRepository):
     def update(self, item_id: int, data: dict[str, Any]) -> None:
         self.execute(
             """
-            UPDATE helmet
+            UPDATE defense_gear
             SET name = ?, armor_class = ?, durability = ?, protected_area = ?, material = ?,
                 sound_penalty = ?, ricochet_chance = ?, description = ?
-            WHERE id = ?
+            WHERE id = ? AND gear_type = 'helmet'
             """,
             (
                 data["name"],
@@ -59,7 +63,10 @@ class HelmetRepository(BaseRepository):
         )
 
     def delete(self, item_id: int) -> None:
-        self.execute("DELETE FROM helmet WHERE id = ?", (item_id,))
+        self.execute("DELETE FROM defense_gear WHERE id = ? AND gear_type = 'helmet'", (item_id,))
 
     def find_by_class(self, armor_class: int) -> list[dict[str, Any]]:
-        return self.fetch_all("SELECT * FROM helmet WHERE armor_class = ? ORDER BY id", (armor_class,))
+        return self.fetch_all(
+            "SELECT * FROM defense_gear WHERE gear_type = 'helmet' AND armor_class = ? ORDER BY id",
+            (armor_class,),
+        )

@@ -49,16 +49,24 @@ class LoadoutListPage:
     def _open_edit_dialog(self, loadout_id: int, detail: dict) -> None:
         header = detail["header"]
         name_field = ft.TextField(label="세팅 이름", value=str(header.get("name", "")), width=320)
+        raid_purpose_field = ft.TextField(label="레이드 목적", value=str(header.get("raid_purpose", "")), width=320)
         memo_field = ft.TextField(label="메모", value=str(header.get("memo", "")), multiline=True, min_lines=2)
 
         dialog = ft.AlertDialog(
             title=ft.Text("세팅 수정"),
-            content=ft.Container(width=420, content=ft.Column(tight=True, controls=[name_field, memo_field])),
+            content=ft.Container(width=420, content=ft.Column(tight=True, controls=[name_field, raid_purpose_field, memo_field])),
             actions=[
                 ft.TextButton("취소", on_click=lambda _: self._close_dialog(dialog)),
                 ft.ElevatedButton(
                     "저장",
-                    on_click=lambda _: self._save_edit(dialog, loadout_id, name_field.value or "", memo_field.value or "", detail),
+                    on_click=lambda _: self._save_edit(
+                        dialog,
+                        loadout_id,
+                        name_field.value or "",
+                        raid_purpose_field.value or "",
+                        memo_field.value or "",
+                        detail,
+                    ),
                 ),
             ],
         )
@@ -66,11 +74,20 @@ class LoadoutListPage:
         dialog.open = True
         self.page.update()
 
-    def _save_edit(self, dialog: ft.AlertDialog, loadout_id: int, name: str, memo: str, detail: dict) -> None:
+    def _save_edit(
+        self,
+        dialog: ft.AlertDialog,
+        loadout_id: int,
+        name: str,
+        raid_purpose: str,
+        memo: str,
+        detail: dict,
+    ) -> None:
         weapon = detail.get("weapon") or {}
         payload = {
             "user_id": int(detail["header"].get("user_id", self.user_id)),
             "name": name,
+            "raid_purpose": raid_purpose,
             "memo": memo,
             "weapon_id": weapon.get("id"),
             "weapon_part_ids": [item["id"] for item in detail.get("weapon_parts", [])],
@@ -85,6 +102,15 @@ class LoadoutListPage:
             "medical_items": [
                 {"medical_item_id": item["id"], "quantity": int(item.get("quantity", 1))}
                 for item in detail.get("medical_items", [])
+            ],
+            "support_items": [
+                {
+                    "support_item_id": item["id"],
+                    "quantity": int(item.get("quantity", 1)),
+                    "slot_label": item.get("slot_label"),
+                }
+                for item in detail.get("support_items", [])
+                if item.get("item_type") not in {"rig", "backpack", "medical"}
             ],
         }
         success, message = self.service.update_loadout(loadout_id, payload)

@@ -6,21 +6,24 @@ from repositories.base_repository import BaseRepository
 
 
 class MedicalRepository(BaseRepository):
-    """medical_item 테이블 CRUD."""
+    """support_item(medical) CRUD."""
 
     def find_all(self) -> list[dict[str, Any]]:
-        return self.fetch_all("SELECT * FROM medical_item ORDER BY id")
+        return self.fetch_all("SELECT * FROM support_item WHERE item_type = 'medical' ORDER BY id")
 
     def find_by_id(self, item_id: int) -> dict[str, Any] | None:
-        return self.fetch_one("SELECT * FROM medical_item WHERE id = ?", (item_id,))
+        return self.fetch_one(
+            "SELECT * FROM support_item WHERE id = ? AND item_type = 'medical'",
+            (item_id,),
+        )
 
     def insert(self, data: dict[str, Any]) -> int:
-        new_id = self.get_next_id("medical_item")
+        new_id = self.get_next_id("support_item")
         self.execute(
             """
-            INSERT INTO medical_item (
-                id, name, heal_amount, uses_count, effect_text, weight, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO support_item (
+                id, name, item_type, capacity_or_heal, uses_count, weight, effect_text, description
+            ) VALUES (?, ?, 'medical', ?, ?, ?, ?, ?)
             """,
             (
                 new_id,
@@ -37,9 +40,9 @@ class MedicalRepository(BaseRepository):
     def update(self, item_id: int, data: dict[str, Any]) -> None:
         self.execute(
             """
-            UPDATE medical_item
-            SET name = ?, heal_amount = ?, uses_count = ?, effect_text = ?, weight = ?, description = ?
-            WHERE id = ?
+            UPDATE support_item
+            SET name = ?, capacity_or_heal = ?, uses_count = ?, effect_text = ?, weight = ?, description = ?
+            WHERE id = ? AND item_type = 'medical'
             """,
             (
                 data["name"],
@@ -53,4 +56,4 @@ class MedicalRepository(BaseRepository):
         )
 
     def delete(self, item_id: int) -> None:
-        self.execute("DELETE FROM medical_item WHERE id = ?", (item_id,))
+        self.execute("DELETE FROM support_item WHERE id = ? AND item_type = 'medical'", (item_id,))

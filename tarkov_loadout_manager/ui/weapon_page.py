@@ -34,15 +34,15 @@ class WeaponPage:
         types = self.service.get_weapon_types()
         self.type_dropdown.options = [ft.dropdown.Option("", "전체")]
         self.type_dropdown.options.extend(
-            [ft.dropdown.Option(str(item["id"]), item["name"]) for item in types]
+            [ft.dropdown.Option(str(item["name"]), str(item["name"])) for item in types]
         )
 
     def refresh(self) -> None:
         type_value = self.type_dropdown.value
-        type_id = int(type_value) if type_value else None
+        type_name = type_value if type_value else None
         weapons = self.service.get_weapons(
             name_keyword=self.search_field.value or "",
-            weapon_type_id=type_id,
+            weapon_type=type_name,
         )
 
         rows: list[ft.DataRow] = []

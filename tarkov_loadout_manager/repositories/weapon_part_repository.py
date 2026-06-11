@@ -19,14 +19,15 @@ class WeaponPartRepository(BaseRepository):
         self.execute(
             """
             INSERT INTO weapon_part (
-                id, part_type_id, name, slot_name, recoil_delta, ergonomics_delta,
+                id, weapon_id, name, part_type, slot_name, recoil_delta, ergonomics_delta,
                 accuracy_delta, weight, description
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 new_id,
-                data["part_type_id"],
+                data["weapon_id"],
                 data["name"],
+                data["part_type"],
                 data.get("slot_name"),
                 data.get("recoil_delta"),
                 data.get("ergonomics_delta"),
@@ -41,13 +42,14 @@ class WeaponPartRepository(BaseRepository):
         self.execute(
             """
             UPDATE weapon_part
-            SET part_type_id = ?, name = ?, slot_name = ?, recoil_delta = ?,
+            SET weapon_id = ?, name = ?, part_type = ?, slot_name = ?, recoil_delta = ?,
                 ergonomics_delta = ?, accuracy_delta = ?, weight = ?, description = ?
             WHERE id = ?
             """,
             (
-                data["part_type_id"],
+                data["weapon_id"],
                 data["name"],
+                data["part_type"],
                 data.get("slot_name"),
                 data.get("recoil_delta"),
                 data.get("ergonomics_delta"),
@@ -61,26 +63,23 @@ class WeaponPartRepository(BaseRepository):
     def delete(self, item_id: int) -> None:
         self.execute("DELETE FROM weapon_part WHERE id = ?", (item_id,))
 
-    def find_by_type(self, part_type_id: int) -> list[dict[str, Any]]:
+    def find_by_type(self, part_type: str) -> list[dict[str, Any]]:
         return self.fetch_all(
-            "SELECT * FROM weapon_part WHERE part_type_id = ? ORDER BY id",
-            (part_type_id,),
+            "SELECT * FROM weapon_part WHERE part_type = ? ORDER BY id",
+            (part_type,),
         )
 
     def find_by_weapon_id(self, weapon_id: int) -> list[dict[str, Any]]:
         return self.fetch_all(
-            """
-            SELECT *
-            FROM weapon_part
-            WHERE id IN (
-                SELECT weapon_part_id
-                FROM weapon_part_compatibility
-                WHERE weapon_id = ?
-            )
-            ORDER BY id
-            """,
+            "SELECT * FROM weapon_part WHERE weapon_id = ? ORDER BY id",
             (weapon_id,),
         )
 
     def find_part_types(self) -> list[dict[str, Any]]:
-        return self.fetch_all("SELECT * FROM part_type ORDER BY id")
+        return self.fetch_all(
+            """
+            SELECT ROW_NUMBER() OVER (ORDER BY part_type) AS id, part_type AS name
+            FROM (SELECT DISTINCT part_type FROM weapon_part)
+            ORDER BY part_type
+            """
+        )
